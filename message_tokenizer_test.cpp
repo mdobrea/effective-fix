@@ -15,6 +15,7 @@ enum class errcode
 {
 	empty_range,
 	end_of_stream,
+	invalid_iterator_state,
 	numeric_overflow,
 	missing_tag,
 	not_a_number
@@ -25,60 +26,6 @@ struct parse_error
 	parse_error(errcode errc) {}
 };
 
-template<typename InputIterator>
-std::pair<int, InputIterator> parseTag(InputIterator first, InputIterator last)
-{
-	if(first == last)
-		throw parse_error { errcode::empty_range };
-
-	if(*first == '=')
-		throw parse_error { errcode::missing_tag };
-
-	int ch = *first++;
-
-	if(!std::isdigit(ch))
-		throw parse_error { errcode::not_a_number };
-	
-	int tag= ch - '0';	// TODO: may not be portable
-
-	for(; first != last; ++first)
-	{
-		ch = *first;
-
-		if(ch == '=')
-		{
-			return std::make_pair(tag, ++first);
-		}
-
-		if(!std::isdigit(ch))
-			throw parse_error { errcode::not_a_number };
-
-		if(tag  > (std::numeric_limits<int>::max() - (ch-'0')) / 10)
-			throw parse_error { errcode::numeric_overflow };
-
-		tag = tag*10 + (ch-'0');
-	}
-
-	throw parse_error { errcode::end_of_stream };
-}
-
-template<typename InputIterator>
-void parseMessage(InputIterator first, InputIterator last, char separator)
-{
-	while(first != last)
-	{
-		std::pair<int, InputIterator> ret = parseTag(first, last);
-		first = std::find(ret.second, last,  separator);
-		if(first == last)
-			throw parse_error { errcode::end_of_stream };
-
-		{
-			std::cout << "tag=" << ret.first << " value=" << std::string { ret.second, first } << '\n';
-		}
-
-		++first;
-	}
-}
 
 template<typename InputIterator>
 struct tag_value_iterator_value_type
@@ -88,12 +35,13 @@ struct tag_value_iterator_value_type
 	InputIterator second {};
 };
 
-template<typename InputIterator, typename SeparatorType>
-class tag_value_iterator : public tag_value_iterator_value_type<InputIterator>
+// todo - determine automatically SeparatorType from iterator traits
+template<typename Iterator, typename SeparatorType>
+class tag_value_iterator : public tag_value_iterator_value_type<Iterator>
 {
 public:
-	tag_value_iterator(InputIterator begin, InputIterator end, SeparatorType separator = 1)
-		: begin { begin }, end { end }, separator{separator}, valid {begin != second}
+	tag_value_iterator(Iterator begin, Iterator end, SeparatorType separator = 1)
+		: begin{begin}, end{end}, separator{separator}, valid {begin != end}
 	{
 		if(valid)
 			increment();
@@ -105,19 +53,59 @@ private:
 	void increment()
 	{
 		if(!valid)
-			throw errcode { invalid_iterator };
+			throw errcode { errcode::invalid_iterator_state };
 		if(begin == end)
 			valid = false;
-		std::pair<int, InputIterator> ret = parseTag(begin, end);
-		begin = std::find(ret.second, end,  separator);
-		if(begin == end)
+		parseTag();
+		this->first = begin;
+		this->second = std::find(begin, end, separator);
+		if(this->second == end)
 			throw parse_error { errcode::end_of_stream };
+		begin = this->second;
+		++begin;
 	}
 
-	const tag_value_iterator_value_type&  dereference() const
+	void parseTag()
+	{
+		if(begin == end)
+			throw parse_error { errcode::empty_range };
+
+		if(*begin == '=')
+			throw parse_error { errcode::missing_tag };
+
+		int ch = *begin++;
+
+		if(!std::isdigit(ch))
+			throw parse_error { errcode::not_a_number };
+
+		this->tag= ch - '0';	// TODO: may not be portable
+
+		for(; begin != end; ++begin)
+		{
+			ch = *begin;
+			if(ch == '=')
+			{
+				++begin;
+				return;
+			}
+
+			if(!std::isdigit(ch))
+				throw parse_error { errcode::not_a_number };
+
+			if(this->tag  > (std::numeric_limits<int>::max() - (ch-'0')) / 10)
+				throw parse_error { errcode::numeric_overflow };
+
+			this->tag = this->tag*10 + (ch-'0');
+		}
+
+		throw parse_error { errcode::end_of_stream };
+	}
+
+
+	const tag_value_iterator_value_type<Iterator>&  dereference() const
 	{
 		if(!valid)
-			throw errcode { invalid_iterator };
+			throw errcode { errcode::invalid_iterator_state };
 		return *this;
 	}
 	template<class Other>
@@ -126,11 +114,22 @@ private:
 		return (a.valid && valid) ? ( (a.begin==begin) && (a.end == end) ) : (a.valid==valid);
 	}
 
-	InputIterator begin;
-	InputIterator end;
+	Iterator begin;
+	Iterator end;
 	SeparatorType separator;
 	bool valid;
 };
+
+
+template<typename InputIterator>
+void parseMessage(InputIterator first, InputIterator last, char separator)
+{
+	for(tag_value_iterator it{first, last}; it != tag_value_iterator{}; ++it)
+	{
+		const tag_value_iterator::value_type& vt = *it;
+		std::cout << "tag=" << vt.tag << " value=" << std::string { vt.first, vt.second } << '\n';
+	}
+}
 
 int main()
 {
@@ -142,7 +141,7 @@ int main()
 		"8=WHL.1.0|9=363|35=Q|34=230827|52=20131113-10:00:12.455|97=N|10=002|";
 	parseMessage(message.begin(), message.end(), '|');
 
-	tag_value_iterator it(message.begin(), message.end());
+
 
 
 	//std::pair<int, std::string::iterator> ret = parseTag(message.begin(), message.end());
