@@ -5,9 +5,14 @@
 #include <iterator> // iterator_traits
 #include <limits>	// numeric_limits
 
+enum class tag
+{
+	begin_string = 8,
+	body_length = 9
+};
 enum class errcode
 {
-	empty_range,
+	empty_range=1,
 	end_of_stream,
 	invalid_iterator_state,
 	numeric_overflow,
@@ -17,23 +22,33 @@ enum class errcode
 
 struct parse_error
 {
-	parse_error(errcode errc) {}
+	parse_error(errcode errc) : errc{errc} {}
+	errcode errc;
 };
 
 
-template<typename InputIterator>
-struct tag_value_iterator_value_type
+template<typename Iterator>
+struct tag_value
 {
 	int tag {};
-	InputIterator first {};
-	InputIterator second {};
+	Iterator first {};
+	Iterator second {};
 };
+
+
+
+template<typename Iterator>
+std::ostream& operator<<(std::ostream& os, const tag_value<Iterator>& tv)
+{
+	std::cout << '{' << tv.tag << "," << std::string { tv.first, tv.second } << '}';
+	return os;
+}
 
 template<typename Iterator>
 class tag_value_iterator : 	public std::iterator<
 								typename std::iterator_traits<Iterator>::iterator_category,
-								tag_value_iterator_value_type<Iterator>>,
-							private tag_value_iterator_value_type<Iterator>
+								tag_value<Iterator>>,
+							private tag_value<Iterator>
 {
 public:
 	tag_value_iterator(
@@ -64,8 +79,8 @@ public:
 		return !(*this == a);
 	}
 
-	tag_value_iterator_value_type<Iterator>& operator*() { return *this; };
-	const tag_value_iterator_value_type<Iterator>& operator*() const { return *this; };
+	tag_value<Iterator>& operator*() { return *this; };
+	const tag_value<Iterator>& operator*() const { return *this; };
 
 private:
 	void increment()
@@ -73,12 +88,17 @@ private:
 		if(!valid)
 			throw errcode { errcode::invalid_iterator_state };
 		if(begin == end)
+		{
 			valid = false;
+			return;
+		}
 		parseTag();
 		this->first = begin;
 		this->second = std::find(begin, end, separator);
 		if(this->second == end)
+		{
 			throw parse_error { errcode::end_of_stream };
+		}
 		begin = this->second;
 		++begin;
 	}
@@ -125,14 +145,30 @@ private:
 	bool valid;
 };
 
-
-template<typename InputIterator>
-void parseMessage(InputIterator first, InputIterator last, char separator)
+template<typename Iterator, typename Function>
+Function for_each(Iterator first, Iterator last, Function function, typename std::iterator_traits<Iterator>::value_type separator)
 {
-	for(tag_value_iterator<InputIterator> it{first, last}; it != tag_value_iterator<InputIterator>{}; ++it)
+	std::for_each(tag_value_iterator<Iterator>{first, last, separator},
+		tag_value_iterator<Iterator>{},
+		function);
+}
+
+template<typename Iterator>
+void dumpMessage(Iterator first, Iterator last, typename std::iterator_traits<Iterator>::value_type separator, char recordSeparator)
+{
+	for_each(first, last, [](const tag_value<Iterator>& cv) { std::cout << cv << recordSeparator; }, separator);
+}
+
+// todo - generate this function
+template<typename Iterator>
+void f(const tag_value<Iterator>& cv)
+{
+	switch(cv.tag)
 	{
-		const auto& vt = *it;
-		std::cout << "tag=" << vt.tag << " value=" << std::string { vt.first, vt.second } << '\n';
+	case tag::begin_string: // TODO - check if correct, extract version info
+		break;
+	case tag::body_length: // TODO - check if we read enough data (it checks the distance(begin, end) of the message)
+		break;
 	}
 }
 
@@ -144,8 +180,14 @@ int main()
 
 	std::string message =
 		"8=WHL.1.0|9=363|35=Q|34=230827|52=20131113-10:00:12.455|97=N|10=002|";
-	parseMessage(message.begin(), message.end(), '|');
-
+	try
+	{
+		dumpMessage(message.begin(), message.end(), '|', ',');
+	}
+	catch(const parse_error& e)
+	{
+		std::cout << "error=" << static_cast<int>(e.errc) << '\n';
+	}
 	//std::pair<int, std::string::iterator> ret = parseTag(message.begin(), message.end());
 	//std::cout << "tag=" << ret.first << std::endl;
 	return 0;
