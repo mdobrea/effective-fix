@@ -1,0 +1,3 @@
+import testing ;
+
+run component_test.cpp ..//unit_test_framework ;

@@ -1,0 +1,30 @@
+<fields>
+<include_file='boost/containter/string.hpp' />
+<field fixtype='BOOLEAN' intermediate_type='boolean_type' cpp_type='bool' />
+<field fixtype='CHAR' intermediate_type='char_type' cpp_type='char' />
+<field fixtype='COUNTRY' intermediate_type='country_type' cpp_type='boost::containter::string' />
+<field fixtype='CURRENCY' intermediate_type='currency_type' cpp_type='boost::containter::string' />
+<field fixtype='DATA' intermediate_type='data_type' cpp_type='boost::containter::string' />
+<field fixtype='EXCHANGE' intermediate_type='exchange_type' cpp_type='boost::containter::string' />
+<field fixtype='FLOAT' intermediate_type='float_type' cpp_type='double' />
+<field fixtype='INT' intermediate_type='int_type' cpp_type='int' />
+<field fixtype='LANGUAGE' intermediate_type='language_type' cpp_type='boost::containter::string' />
+<field fixtype='LENGTH' intermediate_type='length_type' cpp_type='size_t' />
+<field fixtype='LOCALMKTDATE' intermediate_type='localmktdate_type' cpp_type='boost::containter::string' />
+<field fixtype='MONTHYEAR' intermediate_type='monthyear_type' cpp_type='boost::containter::string' />
+<field fixtype='MULTIPLECHARVALUE' intermediate_type='multiplecharvalue_type' cpp_type='boost::containter::string' />
+<field fixtype='MULTIPLESTRINGVALUE' intermediate_type='multiplestringvalue_type' cpp_type='boost::containter::string' />
+<field fixtype='NUMINGROUP' intermediate_type='numingroup_type' cpp_type='boost::containter::string' />
+<field fixtype='PERCENTAGE' intermediate_type='percentage_type' cpp_type='double' />
+<field fixtype='PRICE' intermediate_type='price_type' cpp_type='double' />
+<field fixtype='PRICEOFFSET' intermediate_type='priceoffset_type' cpp_type='double' />
+<field fixtype='QTY' intermediate_type='qty_type' cpp_type='double' />
+<field fixtype='SEQNUM' intermediate_type='seqnum_type' cpp_type='size_t' />
+<field fixtype='STRING' intermediate_type='string_type' cpp_type='boost::containter::string' />
+<field fixtype='TZTIMEONLY' intermediate_type='tztimeonly_type' cpp_type='boost::containter::string' />
+<field fixtype='TZTIMESTAMP' intermediate_type='tztimestamp_type' cpp_type='boost::containter::string' />
+<field fixtype='UTCDATEONLY' intermediate_type='utcdateonly_type' cpp_type='boost::containter::string' />
+<field fixtype='UTCTIMEONLY' intermediate_type='utctimeonly_type' cpp_type='boost::containter::string' />
+<field fixtype='UTCTIMESTAMP' intermediate_type='utctimestamp_type' cpp_type='boost::containter::string' />
+<field fixtype='XMLDATA' intermediate_type='xmldata_type' cpp_type='boost::containter::string' />
+</fields>
