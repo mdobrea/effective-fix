@@ -1,0 +1,16 @@
+using gcc : ;
+
+path-constant BOOST_ROOT : /home/Marius/boost_1_56_0 ;
+
+alias boost_headers : : : : <include>$(BOOST_ROOT) ;
+
+lib program_options : boost_headers : <file>$(BOOST_ROOT)/stage/lib/libboost_program_options.a ;
+lib unit_test_framework : boost_headers : <file>$(BOOST_ROOT)/stage/lib/libboost_unit_test_framework.a ;
+
+project : requirements
+	  <include>$(BOOST_ROOT)
+	  <include>.
+	  <threading>multi
+      <cxxflags>-std=c++11
+      <linkflags>-std=c++11
+	  ;

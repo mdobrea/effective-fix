@@ -1,6 +1,0 @@
-project
-    : requirements
-      <toolset>gcc:<cxxflags>"-std=c++11 -I/home/Marius/"
-      <toolset>gcc:<linkflags>"-std=c++11"
-     
-    ;
