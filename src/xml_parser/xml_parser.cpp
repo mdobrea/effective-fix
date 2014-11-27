@@ -18,6 +18,9 @@ void xml_parser::load_specs(const xml_parser::tree_type& fixTree, const xml_pars
 {
 	const boost::property_tree::ptree& fields = fixTree.get_child("fix").get_child("fields");
 	load_fields(fields);
+	boost::optional<const boost::property_tree::ptree&> userTypes = userTree.get_child_optional("types");
+	if(userTypes)
+		data.load_user_types(*userTypes);
 }
 
 void xml_parser::load_fields(const xml_parser::tree_type& fields)

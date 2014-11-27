@@ -8,6 +8,7 @@
 #ifndef FIXP_XML_PARSER_HPP_
 #define FIXP_XML_PARSER_HPP_
 
+#include <fixp/ref_data.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <ostream>
 #include <map>
@@ -15,6 +16,8 @@
 
 namespace fixp
 {
+
+
 
 class xml_parser
 {
@@ -41,7 +44,9 @@ private:
 	// TODO - implement key of const std::string&
 	using FieldAttributes=std::map<std::string, FieldAttribute>;
 	FieldAttributes field_attributes;
-	std::set<std::string> types;
+
+	std::set<std::string> types; // TODO - remove
+	ref_data data;
 };
 
 }
