@@ -16,7 +16,7 @@
 namespace fixp
 {
 
-class ref_data
+class dictionary
 {
 public:
 

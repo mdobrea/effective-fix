@@ -16,7 +16,7 @@ const std::string TOKEN_FIXPTYPE { "fixptype" };
 const std::string TOKEN_APPTYPE { "apptype" };
 const std::string TOKEN_ALIAS { "alias" };
 
-void ref_data::load_user_types(const ref_data::tree_type& types)
+void dictionary::load_user_types(const dictionary::tree_type& types)
 {
 	for(const boost::property_tree::ptree::value_type& vt : types)
 	{

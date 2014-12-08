@@ -19,8 +19,8 @@ void xml_parser::load_specs(const xml_parser::tree_type& fixTree, const xml_pars
 	const boost::property_tree::ptree& fields = fixTree.get_child("fix").get_child("fields");
 	load_fields(fields);
 	boost::optional<const boost::property_tree::ptree&> userTypes = userTree.get_child_optional("types");
-	if(userTypes)
-		data.load_user_types(*userTypes);
+	//if(userTypes)
+	//	data.load_user_types(*userTypes);
 }
 
 void xml_parser::load_fields(const xml_parser::tree_type& fields)
@@ -38,6 +38,8 @@ void xml_parser::load_fields(const xml_parser::tree_type& fields)
 			name.data(),
 			FieldAttribute{tag.data(), *types.insert(type.data()).first}
 		});
+
+		data_dict.add_type(type.data(), nullptr, nullptr);
 	}
 }
 
@@ -140,6 +142,15 @@ void xml_parser::write_message(std::ostream& out, const xml_parser::tree_type& m
 	}
 
 	out << "};\n";
+}
+
+void xml_parser::write_types(std::ostream& out)
+{
+	const std::set<data_dictionary::type_info>& types = data_dict.get_types();
+	for(const data_dictionary::type_info& info : types)
+	{
+		out << info.get_name() << '\n';
+	}
 }
 
 }

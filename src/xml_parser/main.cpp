@@ -51,6 +51,7 @@ int main(int argc, const char* argv[])
 
 	fixp::xml_parser parser;
 	parser.load_specs(fixTree, userTree);
+	parser.write_types(std::cout);
 	//boost::property_tree::info_parser::write_info(std::cout, fields);
 
 	//std::set<std::string> types = parser.get_types();

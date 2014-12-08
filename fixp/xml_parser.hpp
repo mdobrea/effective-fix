@@ -8,6 +8,7 @@
 #ifndef FIXP_XML_PARSER_HPP_
 #define FIXP_XML_PARSER_HPP_
 
+#include <fixp/data_dictionary.hpp>
 #include <fixp/ref_data.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <ostream>
@@ -16,8 +17,6 @@
 
 namespace fixp
 {
-
-
 
 class xml_parser
 {
@@ -29,6 +28,7 @@ public:
 	void write_tags(std::ostream& out);
 	void write_message(std::ostream& out, const tree_type& message);
 
+	void write_types(std::ostream& out);
 //	const std::set<std::string>& get_types() const { return types; }
 private:
 	struct FieldAttribute
@@ -46,7 +46,8 @@ private:
 	FieldAttributes field_attributes;
 
 	std::set<std::string> types; // TODO - remove
-	ref_data data;
+
+	data_dictionary data_dict;
 };
 
 }
