@@ -71,6 +71,9 @@ public:
 		return existing;
 	}
 
+	bool contains_type(const std::string& type) const {
+		return types.end() != types.find(type_info(type, nullptr, nullptr));
+	}
 	const std::set<type_info>& get_types() const { return types; }
 
 private:
