@@ -6,3 +6,5 @@ import testing ;
 
 
 run data_dictionary_test.cpp ..//unit_test_framework ;
+
+run fixp_v2_test.cpp ..//unit_test_framework ;
