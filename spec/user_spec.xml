@@ -1,4 +1,5 @@
 <types>
+<type fixtype='AMT' alias='amt_type' apptype='double' />
 <type fixtype='BOOLEAN' alias='boolean_type' apptype='bool' />
 <type fixtype='CHAR' alias='char_type' apptype='char' />
 <type fixtype='COUNTRY' alias='country_type' apptype='boost::containter::string' />

@@ -33,7 +33,7 @@ struct SecurityIDSource
 	using value_type=SecurityIDSourceEnum;
 };
 
-template<typename ... Tags>
+template<typename... Tags>
 struct Component
 {
 	template<typename Tag>
@@ -58,7 +58,7 @@ struct Component
 	}
 
 	template<typename Tag>
-	boost::optional<const typename Tag::value_type&> getCOptional() const
+	boost::optional<const typename Tag::value_type&> getOptional() const
 	{
 		return boost::none;
 	}

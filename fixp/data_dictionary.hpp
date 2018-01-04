@@ -58,26 +58,46 @@ public:
 		const std::string* user_type_name {};
 	};
 
-	const type_info& add_type(
+	void add_type(const std::string& name)
+	{
+		types.insert(type_info { name, nullptr, nullptr });
+	}
+
+	void update_type(
 		const std::string& name,
 		const std::string* alias,
 		const std::string* user_type_name)
 	{
-		type_info& existing = const_cast<type_info&>(*types.insert(type_info { name, nullptr, nullptr }).first);
-		if(alias)
-			existing.set_alias(*aliases.insert(*alias).first);
-		if(user_type_name)
-			existing.set_user_type_name(*user_types.insert(*user_type_name).first);
-		return existing;
+		Types::iterator it = types.find(type_info { name, nullptr, nullptr });
+		if(types.end() != it)
+		{
+			type_info& existing = const_cast<type_info&>(*it);
+			if(alias)
+				existing.set_alias(*aliases.insert(*alias).first);
+			if(user_type_name)
+				existing.set_user_type_name(*user_types.insert(*user_type_name).first);
+		}
 	}
 
 	bool contains_type(const std::string& type) const {
 		return types.end() != types.find(type_info(type, nullptr, nullptr));
 	}
+
+	const type_info* find_type(const std::string& name) const {
+		Types::const_iterator it = types.find(type_info { name, nullptr, nullptr });
+		if(types.end() != it)
+		{
+			return &*it;
+		}
+		return nullptr;
+	}
+
 	const std::set<type_info>& get_types() const { return types; }
 
 private:
-	std::set<type_info> types;
+
+	using Types=std::set<type_info>;
+	Types types;
 	std::set<std::string> aliases;
 	std::set<std::string> user_types;
 };

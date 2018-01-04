@@ -40,6 +40,7 @@ private:
 	};
 
 	void load_fields(const tree_type& fields);
+	void load_user_types(const tree_type& types);
 
 	// TODO - implement key of const std::string&
 	using FieldAttributes=std::map<std::string, FieldAttribute>;

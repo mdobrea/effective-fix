@@ -19,8 +19,20 @@ void xml_parser::load_specs(const xml_parser::tree_type& fixTree, const xml_pars
 	const boost::property_tree::ptree& fields = fixTree.get_child("fix").get_child("fields");
 	load_fields(fields);
 	boost::optional<const boost::property_tree::ptree&> userTypes = userTree.get_child_optional("types");
-	//if(userTypes)
-	//	data.load_user_types(*userTypes);
+	if(userTypes)
+		load_user_types(*userTypes);
+}
+
+void xml_parser::load_user_types(const xml_parser::tree_type& fields)
+{
+	for(const boost::property_tree::ptree::value_type& vt : fields)
+	{
+		const tree_type& info = vt.second.get_child("<xmlattr>");
+		const tree_type& fixtype = info.get_child("fixtype");
+		const tree_type& alias =  info.get_child("alias");
+		const tree_type& apptype = info.get_child("apptype");
+		data_dict.update_type(fixtype.data(), &alias.data(), &apptype.data());
+	}
 }
 
 void xml_parser::load_fields(const xml_parser::tree_type& fields)
@@ -39,7 +51,7 @@ void xml_parser::load_fields(const xml_parser::tree_type& fields)
 			FieldAttribute{tag.data(), *types.insert(type.data()).first}
 		});
 
-		data_dict.add_type(type.data(), nullptr, nullptr);
+		data_dict.add_type(type.data());
 	}
 }
 
@@ -66,7 +78,6 @@ void xml_parser::write_tags(std::ostream& out)
 void xml_parser::write_message(std::ostream& out, const xml_parser::tree_type& message)
 {
 	const tree_type& xmlattr = message.get_child("<xmlattr>");
-
 
 	std::set<std::string> fields; // todo - use const references to std::string, use vector instead
 	std::set<std::string> types;
@@ -101,7 +112,18 @@ void xml_parser::write_message(std::ostream& out, const xml_parser::tree_type& m
 	out << "\tusing tag_type = traits::tag_type;\n";
 	for(const std::string& type : types)
 	{
-		out << "\tusing " << type << "_type = traits::" << type << "_type;\n";
+		const data_dictionary::type_info* typeInfo = data_dict.find_type(type);
+		if(typeInfo)
+		{
+			if(typeInfo->get_alias())
+			{
+				out << "\tusing " << *typeInfo->get_alias() << " = traits::" << *typeInfo->get_alias() << ";\n";
+			}
+			else if(typeInfo->get_user_type_name())
+			{
+				out << "\tusing " << *typeInfo->get_user_type_name() << " = traits::" << *typeInfo->get_user_type_name() << ";\n";
+			}
+		}
 	}
 
 	out << "\n\t// observers\n\n";
@@ -111,15 +133,27 @@ void xml_parser::write_message(std::ostream& out, const xml_parser::tree_type& m
 		FieldAttributes::const_iterator it = field_attributes.find(field);
 		out << "\t";
 		if(field_attributes.end() == it)
-			out << "UnknownType";
+		{
+			out << "UnknownType"  << " get" << field << "() { return Base::getField(tags::" << field << "); }\n";		}
 		else
 		{
-			tmp = *it->second.type;
-			tmp += "_type";
-			out << tmp;
+			const data_dictionary::type_info* typeInfo = data_dict.find_type(*it->second.type);
+			const std::string* type {};
+			if(typeInfo && typeInfo->get_alias())
+			{
+				type = typeInfo->get_alias();
+			}
+			else if(typeInfo && typeInfo->get_user_type_name())
+			{
+				type = typeInfo->get_user_type_name();
+			}
+			else
+			{
+				type = it->second.type;
+			}
+			out << *type << " get" << field << "() { return Base::getField" << "<" << *type << ">(tags::" << field << "); }\n";
 		}
 
-		out << " get" << field << "() { return Base::getField(tags::" << field << "); }\n";
 	}
 
 
@@ -149,8 +183,20 @@ void xml_parser::write_types(std::ostream& out)
 	const std::set<data_dictionary::type_info>& types = data_dict.get_types();
 	for(const data_dictionary::type_info& info : types)
 	{
-		out << info.get_name() << '\n';
+		out << info.get_name();
+		if(info.get_alias())
+		{
+			out << ' ' << *info.get_alias();
+		}
+
+		if(info.get_user_type_name())
+		{
+			out << ' ' << *info.get_user_type_name();
+		}
+
+		out << '\n';
 	}
+
 }
 
 }
